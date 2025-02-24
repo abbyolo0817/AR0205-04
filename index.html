@@ -45,16 +45,88 @@
     <button id="startButton">開始 AR</button>
 
     <!-- WebAR 場景 -->
-    <a-scene mindar-image="imageTargetSrc: ./targets.mind; autoStart: false;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+    <a-scene mindar-image="imageTargetSrc: ./targets.mind; 
+             autoStart: false;
+             filterMinCF: 0.001;
+             filterBeta: 0.01;
+             warmupTolerance: 5;
+             missTolerance: 5" 
+             color-space="sRGB" 
+             renderer="colorManagement: true, physicallyCorrectLights" 
+             vr-mode-ui="enabled: false" 
+             device-orientation-permission-ui="enabled: false">
+        
         <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
         <!-- 設定追蹤的圖片 -->
         <a-entity mindar-image-target="targetIndex: 0">
-            <a-gltf-model src="./assets/model.glb" position="0 0 0" scale="0.5 0.5 0.5"></a-gltf-model>
+            <a-gltf-model src="./assets/model.glb" 
+                         position="0 0 0" 
+                         scale="0.5 0.5 0.5"
+                         rotation="0 0 0"
+                         animation-mixer
+                         gesture-handler="minScale: 0.1; maxScale: 10"></a-gltf-model>
         </a-entity>
     </a-scene>
 
     <script>
+        // 添加手勢控制組件
+        AFRAME.registerComponent('gesture-handler', {
+            schema: {
+                minScale: { default: 0.1 },
+                maxScale: { default: 10 }
+            },
+            init: function() {
+                this.initialScale = this.el.object3D.scale.clone();
+                this.scaleFactor = 1;
+                this.handleScale = this.handleScale.bind(this);
+                this.handleRotation = this.handleRotation.bind(this);
+
+                this.el.sceneEl.addEventListener('touchstart', this.handleScale);
+                this.el.sceneEl.addEventListener('touchmove', this.handleScale);
+                this.el.sceneEl.addEventListener('touchend', this.handleScale);
+                this.el.sceneEl.addEventListener('touchstart', this.handleRotation);
+                this.el.sceneEl.addEventListener('touchmove', this.handleRotation);
+            },
+            handleScale: function(event) {
+                if (event.touches.length === 2) {
+                    const touch1 = event.touches[0];
+                    const touch2 = event.touches[1];
+                    const dist = Math.hypot(
+                        touch1.pageX - touch2.pageX,
+                        touch1.pageY - touch2.pageY
+                    );
+
+                    if (event.type === 'touchstart') {
+                        this.initialPinchDistance = dist;
+                    }
+                    if (event.type === 'touchmove') {
+                        const newScaleFactor = dist / this.initialPinchDistance;
+                        const newScale = this.scaleFactor * newScaleFactor;
+                        if (newScale > this.data.minScale && newScale < this.data.maxScale) {
+                            this.el.object3D.scale.copy(this.initialScale.multiplyScalar(newScale));
+                        }
+                    }
+                    if (event.type === 'touchend') {
+                        this.scaleFactor = this.el.object3D.scale.x / this.initialScale.x;
+                    }
+                }
+            },
+            handleRotation: function(event) {
+                if (event.touches.length === 1) {
+                    if (event.type === 'touchstart') {
+                        this.rotationStart = event.touches[0].pageX;
+                        this.initialRotation = this.el.object3D.rotation.y;
+                    }
+                    if (event.type === 'touchmove') {
+                        const currentRotation = event.touches[0].pageX;
+                        const rotationDiff = (currentRotation - this.rotationStart) * 0.01;
+                        this.el.object3D.rotation.y = this.initialRotation + rotationDiff;
+                    }
+                }
+            }
+        });
+
         const sceneEl = document.querySelector('a-scene');
         const arSystem = sceneEl.systems["mindar-image-system"];
         

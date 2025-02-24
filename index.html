@@ -10,12 +10,33 @@
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.0/dist/mindar-image-aframe.prod.js"></script>
 
     <style>
-        body { margin: 0; overflow: hidden; }
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            width: 100vw;
+            height: 100vh;
+        }
         #startButton {
-            position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
-            padding: 10px 20px; font-size: 18px; background: blue; color: white; border: none;
-            cursor: pointer; border-radius: 5px;
+            position: absolute; 
+            top: 10px; 
+            left: 50%; 
+            transform: translateX(-50%);
+            padding: 10px 20px; 
+            font-size: 18px; 
+            background: blue; 
+            color: white; 
+            border: none;
+            cursor: pointer; 
+            border-radius: 5px;
             z-index: 10;
+        }
+        .a-enter-vr {
+            display: none;
+        }
+        .a-canvas {
+            width: 100% !important;
+            height: 100% !important;
+            position: absolute !important;
         }
     </style>
 </head>
@@ -24,7 +45,7 @@
     <button id="startButton">開始 AR</button>
 
     <!-- WebAR 場景 -->
-    <a-scene mindar-image="imageTargetSrc: ./targets.mind; autoStart: false;" embedded arjs>
+    <a-scene mindar-image="imageTargetSrc: ./targets.mind; autoStart: false;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
         <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
         <!-- 設定追蹤的圖片 -->

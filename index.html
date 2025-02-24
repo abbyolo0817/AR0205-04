@@ -60,12 +60,13 @@
 
         <!-- 設定追蹤的圖片 -->
         <a-entity mindar-image-target="targetIndex: 0">
-            <a-gltf-model src="./assets/model.glb" 
+            <a-gltf-model id="model" 
+                         src="./assets/model.glb" 
                          position="0 0 0" 
                          scale="0.5 0.5 0.5"
                          rotation="0 0 0"
                          animation-mixer
-                         gesture-handler="minScale: 0.1; maxScale: 10"></a-gltf-model>
+                         gesture-handler></a-gltf-model>
         </a-entity>
     </a-scene>
 
@@ -82,13 +83,23 @@
                 this.handleScale = this.handleScale.bind(this);
                 this.handleRotation = this.handleRotation.bind(this);
 
-                this.el.sceneEl.addEventListener('touchstart', this.handleScale);
-                this.el.sceneEl.addEventListener('touchmove', this.handleScale);
-                this.el.sceneEl.addEventListener('touchend', this.handleScale);
-                this.el.sceneEl.addEventListener('touchstart', this.handleRotation);
-                this.el.sceneEl.addEventListener('touchmove', this.handleRotation);
+                // 將事件監聽器綁定到模型元素本身
+                this.el.addEventListener('touchstart', this.handleScale);
+                this.el.addEventListener('touchmove', this.handleScale);
+                this.el.addEventListener('touchend', this.handleScale);
+                this.el.addEventListener('touchstart', this.handleRotation);
+                this.el.addEventListener('touchmove', this.handleRotation);
+            },
+            remove: function() {
+                // 移除事件監聽器
+                this.el.removeEventListener('touchstart', this.handleScale);
+                this.el.removeEventListener('touchmove', this.handleScale);
+                this.el.removeEventListener('touchend', this.handleScale);
+                this.el.removeEventListener('touchstart', this.handleRotation);
+                this.el.removeEventListener('touchmove', this.handleRotation);
             },
             handleScale: function(event) {
+                event.preventDefault(); // 防止頁面縮放
                 if (event.touches.length === 2) {
                     const touch1 = event.touches[0];
                     const touch2 = event.touches[1];
@@ -104,7 +115,11 @@
                         const newScaleFactor = dist / this.initialPinchDistance;
                         const newScale = this.scaleFactor * newScaleFactor;
                         if (newScale > this.data.minScale && newScale < this.data.maxScale) {
-                            this.el.object3D.scale.copy(this.initialScale.multiplyScalar(newScale));
+                            this.el.object3D.scale.set(
+                                newScale * this.initialScale.x,
+                                newScale * this.initialScale.y,
+                                newScale * this.initialScale.z
+                            );
                         }
                     }
                     if (event.type === 'touchend') {
@@ -113,6 +128,7 @@
                 }
             },
             handleRotation: function(event) {
+                event.preventDefault(); // 防止頁面滾動
                 if (event.touches.length === 1) {
                     if (event.type === 'touchstart') {
                         this.rotationStart = event.touches[0].pageX;
@@ -120,7 +136,7 @@
                     }
                     if (event.type === 'touchmove') {
                         const currentRotation = event.touches[0].pageX;
-                        const rotationDiff = (currentRotation - this.rotationStart) * 0.01;
+                        const rotationDiff = (currentRotation - this.rotationStart) * 0.02; // 增加旋轉靈敏度
                         this.el.object3D.rotation.y = this.initialRotation + rotationDiff;
                     }
                 }

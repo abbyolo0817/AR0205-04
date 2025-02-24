@@ -56,91 +56,78 @@
              vr-mode-ui="enabled: false" 
              device-orientation-permission-ui="enabled: false">
         
-        <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+        <a-camera position="0 0 0" look-controls="enabled: false" raycaster="objects: .clickable"></a-camera>
 
         <!-- 設定追蹤的圖片 -->
         <a-entity mindar-image-target="targetIndex: 0">
             <a-gltf-model id="model" 
+                         class="clickable"
                          src="./assets/model.glb" 
                          position="0 0 0" 
                          scale="0.5 0.5 0.5"
                          rotation="0 0 0"
-                         animation-mixer
-                         gesture-handler></a-gltf-model>
+                         animation-mixer></a-gltf-model>
         </a-entity>
     </a-scene>
 
     <script>
-        // 添加手勢控制組件
-        AFRAME.registerComponent('gesture-handler', {
-            schema: {
-                minScale: { default: 0.1 },
-                maxScale: { default: 10 }
-            },
-            init: function() {
-                this.initialScale = this.el.object3D.scale.clone();
-                this.scaleFactor = 1;
-                this.handleScale = this.handleScale.bind(this);
-                this.handleRotation = this.handleRotation.bind(this);
+        AFRAME.registerComponent('model-handler', {
+            init: function () {
+                var model = this.el;
+                var initialScale = model.object3D.scale.clone();
+                var initialRotation = model.object3D.rotation.y;
+                var currentScale = 1;
 
-                // 將事件監聽器綁定到模型元素本身
-                this.el.addEventListener('touchstart', this.handleScale);
-                this.el.addEventListener('touchmove', this.handleScale);
-                this.el.addEventListener('touchend', this.handleScale);
-                this.el.addEventListener('touchstart', this.handleRotation);
-                this.el.addEventListener('touchmove', this.handleRotation);
-            },
-            remove: function() {
-                // 移除事件監聽器
-                this.el.removeEventListener('touchstart', this.handleScale);
-                this.el.removeEventListener('touchmove', this.handleScale);
-                this.el.removeEventListener('touchend', this.handleScale);
-                this.el.removeEventListener('touchstart', this.handleRotation);
-                this.el.removeEventListener('touchmove', this.handleRotation);
-            },
-            handleScale: function(event) {
-                event.preventDefault(); // 防止頁面縮放
-                if (event.touches.length === 2) {
-                    const touch1 = event.touches[0];
-                    const touch2 = event.touches[1];
-                    const dist = Math.hypot(
-                        touch1.pageX - touch2.pageX,
-                        touch1.pageY - touch2.pageY
-                    );
+                // 追蹤觸摸點
+                var touchStartX;
+                var touchStartY;
+                var previousTouchDistance = 0;
 
-                    if (event.type === 'touchstart') {
-                        this.initialPinchDistance = dist;
+                model.addEventListener('touchstart', function (evt) {
+                    evt.preventDefault();
+                    touchStartX = evt.touches[0].pageX;
+                    touchStartY = evt.touches[0].pageY;
+                    if (evt.touches.length === 2) {
+                        previousTouchDistance = Math.hypot(
+                            evt.touches[0].pageX - evt.touches[1].pageX,
+                            evt.touches[0].pageY - evt.touches[1].pageY
+                        );
                     }
-                    if (event.type === 'touchmove') {
-                        const newScaleFactor = dist / this.initialPinchDistance;
-                        const newScale = this.scaleFactor * newScaleFactor;
-                        if (newScale > this.data.minScale && newScale < this.data.maxScale) {
-                            this.el.object3D.scale.set(
-                                newScale * this.initialScale.x,
-                                newScale * this.initialScale.y,
-                                newScale * this.initialScale.z
-                            );
-                        }
+                });
+
+                model.addEventListener('touchmove', function (evt) {
+                    evt.preventDefault();
+                    
+                    // 處理旋轉（單指）
+                    if (evt.touches.length === 1) {
+                        var deltaX = evt.touches[0].pageX - touchStartX;
+                        model.object3D.rotation.y = initialRotation + (deltaX * 0.01);
                     }
-                    if (event.type === 'touchend') {
-                        this.scaleFactor = this.el.object3D.scale.x / this.initialScale.x;
+                    
+                    // 處理縮放（雙指）
+                    if (evt.touches.length === 2) {
+                        var currentTouchDistance = Math.hypot(
+                            evt.touches[0].pageX - evt.touches[1].pageX,
+                            evt.touches[0].pageY - evt.touches[1].pageY
+                        );
+                        
+                        var scaleDelta = currentTouchDistance / previousTouchDistance;
+                        currentScale *= scaleDelta;
+                        
+                        // 限制縮放範圍
+                        currentScale = Math.min(Math.max(currentScale, 0.1), 3);
+                        
+                        model.object3D.scale.copy(initialScale.clone().multiplyScalar(currentScale));
+                        
+                        previousTouchDistance = currentTouchDistance;
                     }
-                }
-            },
-            handleRotation: function(event) {
-                event.preventDefault(); // 防止頁面滾動
-                if (event.touches.length === 1) {
-                    if (event.type === 'touchstart') {
-                        this.rotationStart = event.touches[0].pageX;
-                        this.initialRotation = this.el.object3D.rotation.y;
-                    }
-                    if (event.type === 'touchmove') {
-                        const currentRotation = event.touches[0].pageX;
-                        const rotationDiff = (currentRotation - this.rotationStart) * 0.02; // 增加旋轉靈敏度
-                        this.el.object3D.rotation.y = this.initialRotation + rotationDiff;
-                    }
-                }
+                });
             }
+        });
+
+        // 等待模型加載完成後添加處理程序
+        document.querySelector('#model').addEventListener('model-loaded', function () {
+            this.setAttribute('model-handler', '');
         });
 
         const sceneEl = document.querySelector('a-scene');
@@ -148,7 +135,7 @@
         
         document.getElementById("startButton").addEventListener("click", async () => {
             try {
-                await arSystem.start(); // 啟動 AR
+                await arSystem.start();
                 console.log("AR 已啟動");
             } catch (e) {
                 console.error("AR 啟動失敗:", e);

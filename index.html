@@ -112,11 +112,35 @@
         
         <a-camera position="0 0 0" look-controls="enabled: false" cursor="fuse: false; rayOrigin: mouse;"></a-camera>
 
-        <!-- 修改 3D 模型，添加 gesture-handler -->
+        <!-- 第一個目標圖片（索引 0）和對應的模型 A -->
         <a-entity mindar-image-target="targetIndex: 0">
-            <a-gltf-model id="model" 
+            <a-gltf-model id="modelA" 
                          class="clickable"
-                         src="./assets/model.glb" 
+                         src="./assets/modelA.glb" 
+                         position="0 0 0" 
+                         scale="0.5 0.5 0.5"
+                         rotation="0 0 0"
+                         animation-mixer
+                         gesture-handler></a-gltf-model>
+        </a-entity>
+
+        <!-- 第二個目標圖片（索引 1）和對應的模型 B -->
+        <a-entity mindar-image-target="targetIndex: 1">
+            <a-gltf-model id="modelB" 
+                         class="clickable"
+                         src="./assets/modelB.glb" 
+                         position="0 0 0" 
+                         scale="0.5 0.5 0.5"
+                         rotation="0 0 0"
+                         animation-mixer
+                         gesture-handler></a-gltf-model>
+        </a-entity>
+
+        <!-- 可以繼續添加更多目標圖片和模型 -->
+        <a-entity mindar-image-target="targetIndex: 2">
+            <a-gltf-model id="modelC" 
+                         class="clickable"
+                         src="./assets/modelC.glb" 
                          position="0 0 0" 
                          scale="0.5 0.5 0.5"
                          rotation="0 0 0"
@@ -126,12 +150,11 @@
     </a-scene>
 
     <script>
-        document.querySelector('#model').addEventListener('model-loaded', function() {
-            console.log('模型已加載');
-        });
-
-        document.querySelector('#model').addEventListener('gesture-handler-ready', function() {
-            console.log('手勢處理器已準備就緒');
+        // 監聽所有模型的加載事件
+        ['modelA', 'modelB', 'modelC'].forEach(modelId => {
+            document.querySelector(`#${modelId}`).addEventListener('model-loaded', function() {
+                console.log(`${modelId} 已加載`);
+            });
         });
     </script>
 </body>

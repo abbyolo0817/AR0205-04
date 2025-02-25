@@ -19,20 +19,6 @@
             width: 100vw;
             height: 100vh;
         }
-        #startButton {
-            position: absolute; 
-            top: 10px; 
-            left: 50%; 
-            transform: translateX(-50%);
-            padding: 10px 20px; 
-            font-size: 18px; 
-            background: blue; 
-            color: white; 
-            border: none;
-            cursor: pointer; 
-            border-radius: 5px;
-            z-index: 10;
-        }
         .a-enter-vr {
             display: none;
         }
@@ -112,10 +98,6 @@
     </script>
 </head>
 <body>
-    <!-- 啟動 WebAR 的按鈕 -->
-    <button id="startButton">開始 AR</button>
-
-    <!-- WebAR 場景 -->
     <a-scene mindar-image="imageTargetSrc: ./targets.mind; 
              autoStart: true;
              filterMinCF: 0.001;
@@ -144,18 +126,6 @@
     </a-scene>
 
     <script>
-        const sceneEl = document.querySelector('a-scene');
-        const arSystem = sceneEl.systems["mindar-image-system"];
-        
-        document.getElementById("startButton").addEventListener("click", async () => {
-            try {
-                await arSystem.start();
-                console.log("AR 已啟動");
-            } catch (e) {
-                console.error("AR 啟動失敗:", e);
-            }
-        });
-
         document.querySelector('#model').addEventListener('model-loaded', function() {
             console.log('模型已加載');
         });

@@ -11,8 +11,6 @@
     
     <!-- 添加額外的互動組件 -->
     <script src="https://raw.githack.com/donmccurdy/aframe-extras/master/dist/aframe-extras.loaders.min.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/studio-backend/master/src/modules/marker/tools/gesture-detector.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/studio-backend/master/src/modules/marker/tools/gesture-handler.js"></script>
 
     <style>
         body { 
@@ -44,6 +42,74 @@
             position: absolute !important;
         }
     </style>
+
+    <!-- 直接在頭部定義手勢處理腳本 -->
+    <script>
+        AFRAME.registerComponent('gesture-handler', {
+            schema: {
+                enabled: { default: true },
+                rotationFactor: { default: 5 },
+                minScale: { default: 0.3 },
+                maxScale: { default: 8 },
+            },
+
+            init: function() {
+                this.handleScale = this.handleScale.bind(this);
+                this.handleRotation = this.handleRotation.bind(this);
+
+                this.isVisible = false;
+                this.initialScale = this.el.object3D.scale.clone();
+                this.scaleFactor = 1;
+
+                this.el.sceneEl.addEventListener('touchstart', this.handleRotation);
+                this.el.sceneEl.addEventListener('touchmove', this.handleRotation);
+                this.el.sceneEl.addEventListener('touchend', this.handleRotation);
+                
+                this.el.sceneEl.addEventListener('gesturestart', this.handleScale);
+                this.el.sceneEl.addEventListener('gesturechange', this.handleScale);
+                this.el.sceneEl.addEventListener('gestureend', this.handleScale);
+            },
+
+            handleRotation: function(event) {
+                if (event.touches.length === 1) {
+                    if (event.type === 'touchstart') {
+                        this.rotationStart = {
+                            x: event.touches[0].pageX,
+                            y: event.touches[0].pageY
+                        };
+                    } else if (event.type === 'touchmove' && this.rotationStart) {
+                        const deltaX = event.touches[0].pageX - this.rotationStart.x;
+                        const deltaY = event.touches[0].pageY - this.rotationStart.y;
+                        
+                        this.el.object3D.rotation.y += deltaX * 0.01 * this.data.rotationFactor;
+                        this.el.object3D.rotation.x += deltaY * 0.01 * this.data.rotationFactor;
+                        
+                        this.rotationStart = {
+                            x: event.touches[0].pageX,
+                            y: event.touches[0].pageY
+                        };
+                    }
+                }
+            },
+
+            handleScale: function(event) {
+                if (event.type === 'gesturechange') {
+                    const newScaleFactor = this.scaleFactor * event.scale;
+                    
+                    const validScale = Math.min(
+                        Math.max(this.data.minScale, newScaleFactor),
+                        this.data.maxScale
+                    );
+
+                    this.el.object3D.scale.x = this.initialScale.x * validScale;
+                    this.el.object3D.scale.y = this.initialScale.y * validScale;
+                    this.el.object3D.scale.z = this.initialScale.z * validScale;
+                } else if (event.type === 'gestureend') {
+                    this.scaleFactor = this.el.object3D.scale.x / this.initialScale.x;
+                }
+            }
+        });
+    </script>
 </head>
 <body>
     <!-- 啟動 WebAR 的按鈕 -->
@@ -51,7 +117,7 @@
 
     <!-- WebAR 場景 -->
     <a-scene mindar-image="imageTargetSrc: ./targets.mind; 
-             autoStart: false;
+             autoStart: true;
              filterMinCF: 0.001;
              filterBeta: 0.01;
              warmupTolerance: 5;
@@ -60,7 +126,6 @@
              renderer="colorManagement: true, physicallyCorrectLights" 
              vr-mode-ui="enabled: false" 
              device-orientation-permission-ui="enabled: false"
-             gesture-detector
              embedded>
         
         <a-camera position="0 0 0" look-controls="enabled: false" cursor="fuse: false; rayOrigin: mouse;"></a-camera>
@@ -74,14 +139,7 @@
                          scale="0.5 0.5 0.5"
                          rotation="0 0 0"
                          animation-mixer
-                         gesture-handler="
-                            minScale: 0.1; 
-                            maxScale: 3;
-                            rotationFactor: 1;
-                            smoothingFactor: 1;
-                            dragDeadZone: 0.1;
-                            enabled: true"
-                         ></a-gltf-model>
+                         gesture-handler></a-gltf-model>
         </a-entity>
     </a-scene>
 

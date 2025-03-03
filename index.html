@@ -27,29 +27,30 @@
             height: 100% !important;
             position: absolute !important;
         }
-        /* 添加按鈕樣式 */
+        /* 修改按鈕容器樣式 */
         .button-container {
             position: fixed;
             bottom: 20px;
             right: 20px;
             z-index: 1000;
             display: flex;
-            flex-direction: column;
+            flex-direction: row; /* 改為水平排列 */
             gap: 10px;
+            display: none; /* 初始時隱藏按鈕 */
         }
         .ar-button {
             padding: 10px 20px;
-            background-color: rgba(255, 255, 255, 0.8);
-            border: none;
+            background-color: rgba(255, 192, 0, 0); /* 透明背景 */
+            border: 2px solid #000000; /* 黑色邊框 */
             border-radius: 5px;
             cursor: pointer;
             font-size: 16px;
             text-decoration: none;
-            color: #000;
+            color: #FFC000; /* 文字顏色改為 #FFC000 */
             text-align: center;
         }
         .ar-button:hover {
-            background-color: rgba(255, 255, 255, 1);
+            background-color: rgba(255, 192, 0, 0.1); /* 懸停時稍微顯示一點背景 */
         }
     </style>
 
@@ -122,7 +123,7 @@
     </script>
 </head>
 <body>
-    <!-- 添加按鈕容器 -->
+    <!-- 按鈕容器 -->
     <div class="button-container">
         <a href="https://coming.hle.com.tw/#四角柱" class="ar-button">四角柱</a>
         <a href="https://coming.hle.com.tw/#五角柱" class="ar-button">五角柱</a>
@@ -156,9 +157,25 @@
     </a-scene>
 
     <script>
-        // 簡化為單一模型的加載監聽
+        // 監聽模型加載
         document.querySelector('#model').addEventListener('model-loaded', function() {
             console.log('模型已加載');
+        });
+
+        // 監聽相機權限狀態
+        const sceneEl = document.querySelector('a-scene');
+        const buttonContainer = document.querySelector('.button-container');
+
+        // 當場景準備就緒時（相機已獲得權限）
+        sceneEl.addEventListener('arReady', function() {
+            console.log('AR 系統準備就緒');
+            buttonContainer.style.display = 'flex'; // 顯示按鈕
+        });
+
+        // 當場景出錯時（可能是相機權限被拒絕）
+        sceneEl.addEventListener('arError', function(ev) {
+            console.log('AR 系統錯誤:', ev);
+            buttonContainer.style.display = 'none'; // 確保按鈕不顯示
         });
     </script>
 </body>

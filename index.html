@@ -27,6 +27,30 @@
             height: 100% !important;
             position: absolute !important;
         }
+        /* 添加按鈕樣式 */
+        .button-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .ar-button {
+            padding: 10px 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            text-decoration: none;
+            color: #000;
+            text-align: center;
+        }
+        .ar-button:hover {
+            background-color: rgba(255, 255, 255, 1);
+        }
     </style>
 
     <!-- 直接在頭部定義手勢處理腳本 -->
@@ -98,6 +122,12 @@
     </script>
 </head>
 <body>
+    <!-- 添加按鈕容器 -->
+    <div class="button-container">
+        <a href="https://coming.hle.com.tw/#四角柱" class="ar-button">四角柱</a>
+        <a href="https://coming.hle.com.tw/#五角柱" class="ar-button">五角柱</a>
+    </div>
+
     <a-scene mindar-image="imageTargetSrc: ./targets.mind; 
              autoStart: true;
              filterMinCF: 0.001;
@@ -112,35 +142,11 @@
         
         <a-camera position="0 0 0" look-controls="enabled: false" cursor="fuse: false; rayOrigin: mouse;"></a-camera>
 
-        <!-- 第一個目標圖片（索引 0）和對應的模型 A -->
+        <!-- 保留單一目標圖片和模型 -->
         <a-entity mindar-image-target="targetIndex: 0">
-            <a-gltf-model id="modelA" 
+            <a-gltf-model id="model" 
                          class="clickable"
-                         src="./assets/modelA.glb" 
-                         position="0 0 0" 
-                         scale="0.5 0.5 0.5"
-                         rotation="0 0 0"
-                         animation-mixer
-                         gesture-handler></a-gltf-model>
-        </a-entity>
-
-        <!-- 第二個目標圖片（索引 1）和對應的模型 B -->
-        <a-entity mindar-image-target="targetIndex: 1">
-            <a-gltf-model id="modelB" 
-                         class="clickable"
-                         src="./assets/modelB.glb" 
-                         position="0 0 0" 
-                         scale="0.5 0.5 0.5"
-                         rotation="0 0 0"
-                         animation-mixer
-                         gesture-handler></a-gltf-model>
-        </a-entity>
-
-        <!-- 可以繼續添加更多目標圖片和模型 -->
-        <a-entity mindar-image-target="targetIndex: 2">
-            <a-gltf-model id="modelC" 
-                         class="clickable"
-                         src="./assets/modelC.glb" 
+                         src="./assets/model.glb" 
                          position="0 0 0" 
                          scale="0.5 0.5 0.5"
                          rotation="0 0 0"
@@ -150,11 +156,9 @@
     </a-scene>
 
     <script>
-        // 監聽所有模型的加載事件
-        ['modelA', 'modelB', 'modelC'].forEach(modelId => {
-            document.querySelector(`#${modelId}`).addEventListener('model-loaded', function() {
-                console.log(`${modelId} 已加載`);
-            });
+        // 簡化為單一模型的加載監聽
+        document.querySelector('#model').addEventListener('model-loaded', function() {
+            console.log('模型已加載');
         });
     </script>
 </body>

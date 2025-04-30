@@ -12,6 +12,9 @@
     <!-- 添加額外的互動組件 -->
     <script src="https://raw.githack.com/donmccurdy/aframe-extras/master/dist/aframe-extras.loaders.min.js"></script>
 
+    <!-- 添加 A-Frame UI 組件 -->
+    <script src="https://cdn.jsdelivr.net/npm/aframe-gui@1.1.0/dist/aframe-gui.min.js"></script>
+
     <style>
         body { 
             margin: 0; 
@@ -27,37 +30,15 @@
             height: 100% !important;
             position: absolute !important;
         }
-        /* 修改按鈕容器樣式 */
-        .button-container {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            z-index: 9999;
-            display: flex;
-            flex-direction: row;
-            gap: 10px;
-            flex-wrap: wrap;
-            max-width: 300px;
-            justify-content: flex-end;
-            pointer-events: auto;
-        }
-        .ar-button {
-            padding: 10px 20px;
+        .gui-button {
             background-color: #FFC000;
             border: 2px solid #000000;
             border-radius: 5px;
-            cursor: pointer;
+            color: #000000;
             font-size: 16px;
             font-weight: bold;
-            text-decoration: none;
-            color: #000000;
-            text-align: center;
-            position: relative;
-            z-index: 10000;
-            pointer-events: auto;
-        }
-        .ar-button:hover {
-            background-color: #FFD133; /* 懸停時稍微變亮 */
+            padding: 10px 20px;
+            margin: 5px;
         }
     </style>
 
@@ -144,21 +125,33 @@
         
         <a-camera position="0 0 0" look-controls="enabled: false" cursor="fuse: false; rayOrigin: mouse;"></a-camera>
 
-        <!-- 按鈕容器 -->
-        <a-entity class="button-container" position="0 0 -0.5">
-            <a-entity class="ar-button" geometry="primitive: plane; width: 1; height: 0.3" 
-                     material="color: #FFC000; opacity: 0.9"
-                     text="value: 頂點; color: black; align: center; width: 1"
-                     link="href: https://website.hle.com.tw/ema/webardemo/prism32/index.html"
-                     position="-0.6 0 0">
-            </a-entity>
-            <a-entity class="ar-button" geometry="primitive: plane; width: 1; height: 0.3" 
-                     material="color: #FFC000; opacity: 0.9"
-                     text="value: 邊; color: black; align: center; width: 1"
-                     link="href: https://website.hle.com.tw/ema/webardemo/prism33/index.html"
-                     position="0.6 0 0">
-            </a-entity>
-        </a-entity>
+        <!-- 使用 GUI 組件創建按鈕 -->
+        <a-gui-flex-container
+            flex-direction="row"
+            justify-content="center"
+            align-items="normal"
+            component-padding="0.1"
+            opacity="0.7"
+            width="1.2"
+            height="0.2"
+            position="0 0 -0.5">
+            
+            <a-gui-button
+                class="gui-button"
+                width="0.5"
+                height="0.15"
+                onclick="window.location.href='https://website.hle.com.tw/ema/webardemo/prism32/index.html'">
+                頂點
+            </a-gui-button>
+            
+            <a-gui-button
+                class="gui-button"
+                width="0.5"
+                height="0.15"
+                onclick="window.location.href='https://website.hle.com.tw/ema/webardemo/prism33/index.html'">
+                邊
+            </a-gui-button>
+        </a-gui-flex-container>
 
         <!-- 保留單一目標圖片和模型 -->
         <a-entity mindar-image-target="targetIndex: 0">

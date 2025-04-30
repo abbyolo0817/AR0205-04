@@ -27,16 +27,16 @@
             position: absolute !important;
             pointer-events: none !important; /* 防止遮擋 */
         }
-        /* 按鈕樣式 */
+        /* 按鈕樣式 - 修改定位和樣式 */
         .button-container {
             position: fixed;
-            bottom: 0;
-            right: 0;
+            bottom: 20px;
+            right: 20px;
             z-index: 999999;
             display: flex;
             flex-direction: row;
             gap: 10px;
-            padding: 10px;
+            pointer-events: auto; /* 確保按鈕可點擊 */
         }
         .ar-button {
             padding: 15px 25px;
@@ -48,9 +48,19 @@
             font-weight: bold;
             text-decoration: none;
             cursor: pointer;
+            pointer-events: auto; /* 確保按鈕可點擊 */
         }
         .ar-button:hover {
             background-color: #FFD133;
+        }
+
+        /* 確保整個AR場景能夠接收點擊事件 */
+        .a-scene {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
         }
     </style>
 
@@ -118,6 +128,12 @@
                 }
             }
         });
+
+        // 確保DOM加載完成後執行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 檢查按鈕是否正確顯示
+            console.log('DOM loaded, buttons should be visible');
+        });
     </script>
 </head>
 <body>
@@ -147,7 +163,7 @@
         </a-entity>
     </a-scene>
 
-    <!-- 原生 HTML 按鈕 -->
+    <!-- 原生 HTML 按鈕 - 移到 a-scene 外部但在 body 內 -->
     <div class="button-container">
         <a href="https://website.hle.com.tw/ema/webardemo/prism32/index.html" class="ar-button">頂點</a>
         <a href="https://website.hle.com.tw/ema/webardemo/prism33/index.html" class="ar-button">邊</a>

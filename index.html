@@ -5,14 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>三角柱v2</title>
     
-    <!-- 更新 A-Frame 版本 -->
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.0/dist/mindar-image-aframe.prod.js"></script>
-    
-    <!-- 添加額外的互動組件 -->
     <script src="https://raw.githack.com/donmccurdy/aframe-extras/master/dist/aframe-extras.loaders.min.js"></script>
-
-    <!-- 添加 A-Frame UI 組件 -->
     <script src="https://cdn.jsdelivr.net/npm/aframe-gui@1.1.0/dist/aframe-gui.min.js"></script>
 
     <style>
@@ -30,18 +25,18 @@
             width: 100% !important;
             height: 100% !important;
             position: absolute !important;
+            pointer-events: none !important; /* 防止遮擋 */
         }
-        
-        /* 設置按鈕容器，使用非常高的z-index值 */
-        #overlay-ui {
+        /* 按鈕樣式 */
+        .button-container {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
+            bottom: 0;
+            right: 0;
+            z-index: 999999;
             display: flex;
             flex-direction: row;
             gap: 10px;
-            z-index: 10000000;
-            pointer-events: auto;
+            padding: 10px;
         }
         .ar-button {
             padding: 15px 25px;
@@ -53,25 +48,12 @@
             font-weight: bold;
             text-decoration: none;
             cursor: pointer;
-            /* 添加陰影使按鈕更明顯 */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
         }
         .ar-button:hover {
             background-color: #FFD133;
         }
-        /* 添加最上層容器作為分離層 */
-        #ui-layer {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 10000000;
-        }
     </style>
 
-    <!-- 直接在頭部定義手勢處理腳本 -->
     <script>
         AFRAME.registerComponent('gesture-handler', {
             schema: {
@@ -81,7 +63,7 @@
                 maxScale: { default: 8 },
             },
 
-            init: function() {
+            init: function () {
                 this.handleScale = this.handleScale.bind(this);
                 this.handleRotation = this.handleRotation.bind(this);
 
@@ -92,13 +74,12 @@
                 this.el.sceneEl.addEventListener('touchstart', this.handleRotation);
                 this.el.sceneEl.addEventListener('touchmove', this.handleRotation);
                 this.el.sceneEl.addEventListener('touchend', this.handleRotation);
-                
                 this.el.sceneEl.addEventListener('gesturestart', this.handleScale);
                 this.el.sceneEl.addEventListener('gesturechange', this.handleScale);
                 this.el.sceneEl.addEventListener('gestureend', this.handleScale);
             },
 
-            handleRotation: function(event) {
+            handleRotation: function (event) {
                 if (event.touches.length === 1) {
                     if (event.type === 'touchstart') {
                         this.rotationStart = {
@@ -108,10 +89,10 @@
                     } else if (event.type === 'touchmove' && this.rotationStart) {
                         const deltaX = event.touches[0].pageX - this.rotationStart.x;
                         const deltaY = event.touches[0].pageY - this.rotationStart.y;
-                        
+
                         this.el.object3D.rotation.y += deltaX * 0.01 * this.data.rotationFactor;
                         this.el.object3D.rotation.x += deltaY * 0.01 * this.data.rotationFactor;
-                        
+
                         this.rotationStart = {
                             x: event.touches[0].pageX,
                             y: event.touches[0].pageY
@@ -120,10 +101,10 @@
                 }
             },
 
-            handleScale: function(event) {
+            handleScale: function (event) {
                 if (event.type === 'gesturechange') {
                     const newScaleFactor = this.scaleFactor * event.scale;
-                    
+
                     const validScale = Math.min(
                         Math.max(this.data.minScale, newScaleFactor),
                         this.data.maxScale
@@ -140,7 +121,6 @@
     </script>
 </head>
 <body>
-    <!-- AR場景 -->
     <a-scene mindar-image="imageTargetSrc: ./targets.mind; 
              autoStart: true;
              filterMinCF: 0.001;
@@ -155,7 +135,6 @@
         
         <a-camera position="0 0 0" look-controls="enabled: false" cursor="fuse: false; rayOrigin: mouse;"></a-camera>
 
-        <!-- 保留單一目標圖片和模型 -->
         <a-entity mindar-image-target="targetIndex: 0">
             <a-gltf-model id="model" 
                          class="clickable"
@@ -168,71 +147,10 @@
         </a-entity>
     </a-scene>
 
-    <!-- 完全分離的UI層 -->
-    <div id="ui-layer">
-        <div id="overlay-ui">
-            <a href="https://website.hle.com.tw/ema/webardemo/prism32/index.html" class="ar-button" id="vertex-btn">頂點</a>
-            <a href="https://website.hle.com.tw/ema/webardemo/prism33/index.html" class="ar-button" id="edge-btn">邊</a>
-        </div>
+    <!-- 原生 HTML 按鈕 -->
+    <div class="button-container">
+        <a href="https://website.hle.com.tw/ema/webardemo/prism32/index.html" class="ar-button">頂點</a>
+        <a href="https://website.hle.com.tw/ema/webardemo/prism33/index.html" class="ar-button">邊</a>
     </div>
-
-    <script>
-        // 確保DOM完全加載後執行
-        document.addEventListener('DOMContentLoaded', function() {
-            // 使用更徹底的方法確保按鈕可見
-            const ensureButtonsVisible = function() {
-                const overlay = document.getElementById('overlay-ui');
-                const uiLayer = document.getElementById('ui-layer');
-                
-                // 確保UI層在最頂層
-                document.body.appendChild(uiLayer);
-                
-                // 強制設置高z-index
-                uiLayer.style.zIndex = "10000000";
-                overlay.style.zIndex = "10000000";
-                
-                // 使按鈕可點擊
-                document.getElementById('vertex-btn').style.pointerEvents = "auto";
-                document.getElementById('edge-btn').style.pointerEvents = "auto";
-            };
-            
-            // 在所有關鍵事件調用確保按鈕可見的函數
-            
-            // 一開始就執行
-            ensureButtonsVisible();
-            
-            // 頁面完全加載後再執行一次
-            window.addEventListener('load', ensureButtonsVisible);
-            
-            // 每隔一段時間檢查一次
-            setInterval(ensureButtonsVisible, 1000);
-            
-            // 場景相關事件
-            const sceneEl = document.querySelector('a-scene');
-            sceneEl.addEventListener('loaded', ensureButtonsVisible);
-            sceneEl.addEventListener('arReady', ensureButtonsVisible);
-            
-            // 模型加載事件
-            document.querySelector('#model').addEventListener('model-loaded', ensureButtonsVisible);
-            
-            // 額外的安全保障：如果用戶點擊屏幕任何地方，確保按鈕可見
-            document.addEventListener('click', ensureButtonsVisible);
-            document.addEventListener('touchstart', ensureButtonsVisible);
-            
-            // 特殊處理：當渲染器發生變化時
-            // 這是在視圖發生變化時的一個關鍵時刻
-            const observer = new MutationObserver(function(mutations) {
-                ensureButtonsVisible();
-            });
-            
-            // 觀察DOM變化，特別是canvas和related元素
-            observer.observe(document.body, { 
-                childList: true, 
-                subtree: true,
-                attributes: true,
-                attributeFilter: ['style', 'class']
-            });
-        });
-    </script>
 </body>
 </html>

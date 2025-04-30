@@ -21,6 +21,7 @@
             overflow: hidden; 
             width: 100vw;
             height: 100vh;
+            position: relative;
         }
         .a-enter-vr {
             display: none;
@@ -34,10 +35,11 @@
             position: fixed;
             bottom: 20px;
             right: 20px;
-            z-index: 9999;
+            z-index: 999999; /* 提高 z-index 確保在最上層 */
             display: flex;
             flex-direction: row;
             gap: 10px;
+            pointer-events: auto;
         }
         .ar-button {
             padding: 15px 25px;
@@ -49,9 +51,20 @@
             font-weight: bold;
             text-decoration: none;
             cursor: pointer;
+            pointer-events: auto;
         }
         .ar-button:hover {
             background-color: #FFD133;
+        }
+        /* 添加遮罩層確保按鈕可點擊 */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 999998;
+            pointer-events: none;
         }
     </style>
 
@@ -151,6 +164,9 @@
         </a-entity>
     </a-scene>
 
+    <!-- 添加遮罩層 -->
+    <div class="overlay"></div>
+
     <!-- 按鈕容器 -->
     <div class="button-container">
         <a href="https://website.hle.com.tw/ema/webardemo/prism32/index.html" class="ar-button">頂點</a>
@@ -167,24 +183,25 @@
         const sceneEl = document.querySelector('a-scene');
         const buttonContainer = document.querySelector('.button-container');
 
-        // 當場景準備就緒時
-        sceneEl.addEventListener('arReady', function() {
-            console.log('AR 系統準備就緒');
-            buttonContainer.style.display = 'flex';
-        });
-
-        // 當場景出錯時
-        sceneEl.addEventListener('arError', function(ev) {
-            console.log('AR 系統錯誤:', ev);
-            buttonContainer.style.display = 'flex';
-        });
-
         // 確保按鈕始終可見
         function ensureButtonsVisible() {
             buttonContainer.style.display = 'flex';
             buttonContainer.style.opacity = '1';
             buttonContainer.style.visibility = 'visible';
+            buttonContainer.style.pointerEvents = 'auto';
         }
+
+        // 當場景準備就緒時
+        sceneEl.addEventListener('arReady', function() {
+            console.log('AR 系統準備就緒');
+            ensureButtonsVisible();
+        });
+
+        // 當場景出錯時
+        sceneEl.addEventListener('arError', function(ev) {
+            console.log('AR 系統錯誤:', ev);
+            ensureButtonsVisible();
+        });
 
         // 頁面加載完成後顯示按鈕
         window.addEventListener('load', function() {
@@ -193,6 +210,16 @@
 
         // 定期檢查按鈕是否可見
         setInterval(ensureButtonsVisible, 1000);
+
+        // 監聽場景渲染事件
+        sceneEl.addEventListener('renderstart', function() {
+            ensureButtonsVisible();
+        });
+
+        // 監聽場景渲染完成事件
+        sceneEl.addEventListener('render', function() {
+            ensureButtonsVisible();
+        });
     </script>
 </body>
 </html>

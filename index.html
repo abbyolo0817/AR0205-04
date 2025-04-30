@@ -31,16 +31,31 @@
             height: 100% !important;
             position: absolute !important;
         }
-        /* 按鈕 iframe 樣式 */
-        .button-iframe {
+        
+        /* 直接在主頁面定義按鈕樣式 */
+        .button-container {
             position: fixed;
-            bottom: 0;
-            right: 0;
-            width: 200px;
-            height: 100px;
-            border: none;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
             z-index: 999999;
             pointer-events: auto;
+        }
+        .ar-button {
+            padding: 15px 25px;
+            background-color: #FFC000;
+            border: 2px solid #000000;
+            border-radius: 5px;
+            color: #000000;
+            font-size: 18px;
+            font-weight: bold;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .ar-button:hover {
+            background-color: #FFD133;
         }
     </style>
 
@@ -113,6 +128,12 @@
     </script>
 </head>
 <body>
+    <!-- 添加固定按鈕容器 -->
+    <div class="button-container">
+        <a href="https://website.hle.com.tw/ema/webardemo/prism32/index.html" class="ar-button">頂點</a>
+        <a href="https://website.hle.com.tw/ema/webardemo/prism33/index.html" class="ar-button">邊</a>
+    </div>
+
     <a-scene mindar-image="imageTargetSrc: ./targets.mind; 
              autoStart: true;
              filterMinCF: 0.001;
@@ -140,65 +161,13 @@
         </a-entity>
     </a-scene>
 
-    <!-- 創建按鈕的 iframe -->
-    <iframe class="button-iframe" id="buttonFrame" src="about:blank"></iframe>
-
     <script>
         // 監聽模型加載
         document.querySelector('#model').addEventListener('model-loaded', function() {
             console.log('模型已加載');
+            // 確保按鈕容器在最上層
+            document.querySelector('.button-container').style.zIndex = "999999";
         });
-
-        // 創建按鈕 HTML
-        const buttonHTML = `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <style>
-                    body {
-                        margin: 0;
-                        padding: 0;
-                        background: transparent;
-                    }
-                    .button-container {
-                        display: flex;
-                        flex-direction: row;
-                        gap: 10px;
-                        padding: 10px;
-                    }
-                    .ar-button {
-                        padding: 15px 25px;
-                        background-color: #FFC000;
-                        border: 2px solid #000000;
-                        border-radius: 5px;
-                        color: #000000;
-                        font-size: 18px;
-                        font-weight: bold;
-                        text-decoration: none;
-                        cursor: pointer;
-                    }
-                    .ar-button:hover {
-                        background-color: #FFD133;
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="button-container">
-                    <a href="https://website.hle.com.tw/ema/webardemo/prism32/index.html" class="ar-button">頂點</a>
-                    <a href="https://website.hle.com.tw/ema/webardemo/prism33/index.html" class="ar-button">邊</a>
-                </div>
-            </body>
-            </html>
-        `;
-
-        // 設置 iframe 內容
-        const buttonFrame = document.getElementById('buttonFrame');
-        buttonFrame.onload = function() {
-            const doc = buttonFrame.contentDocument || buttonFrame.contentWindow.document;
-            doc.open();
-            doc.write(buttonHTML);
-            doc.close();
-        };
 
         // 監聽相機權限狀態
         const sceneEl = document.querySelector('a-scene');
@@ -206,48 +175,23 @@
         // 當場景準備就緒時
         sceneEl.addEventListener('arReady', function() {
             console.log('AR 系統準備就緒');
-            buttonFrame.style.display = 'block';
+            // 確保按鈕容器在最上層
+            document.querySelector('.button-container').style.zIndex = "999999";
         });
 
         // 當場景出錯時
         sceneEl.addEventListener('arError', function(ev) {
             console.log('AR 系統錯誤:', ev);
-            buttonFrame.style.display = 'block';
         });
 
-        // 頁面加載完成後顯示按鈕
+        // 頁面加載完成後確保按鈕可見
         window.addEventListener('load', function() {
-            buttonFrame.style.display = 'block';
-        });
-
-        // 定期檢查按鈕是否可見
-        setInterval(function() {
-            buttonFrame.style.display = 'block';
-        }, 500);
-
-        // 監聽場景渲染事件
-        sceneEl.addEventListener('renderstart', function() {
-            buttonFrame.style.display = 'block';
-        });
-
-        // 監聽場景渲染完成事件
-        sceneEl.addEventListener('render', function() {
-            buttonFrame.style.display = 'block';
-        });
-
-        // 監聽場景更新事件
-        sceneEl.addEventListener('update', function() {
-            buttonFrame.style.display = 'block';
-        });
-
-        // 監聽場景動畫幀事件
-        sceneEl.addEventListener('animationframe', function() {
-            buttonFrame.style.display = 'block';
+            document.querySelector('.button-container').style.zIndex = "999999";
         });
 
         // 監聽場景初始化完成事件
         sceneEl.addEventListener('loaded', function() {
-            buttonFrame.style.display = 'block';
+            document.querySelector('.button-container').style.zIndex = "999999";
         });
     </script>
 </body>

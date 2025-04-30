@@ -13,10 +13,12 @@
     <style>
         body { 
             margin: 0; 
+            padding: 0;
             overflow: hidden; 
-            width: 100vw;
-            height: 100vh;
-            position: relative;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            touch-action: none;
         }
         .a-enter-vr {
             display: none;
@@ -25,18 +27,20 @@
             width: 100% !important;
             height: 100% !important;
             position: absolute !important;
-            pointer-events: none !important; /* 防止遮擋 */
         }
-        /* 按鈕樣式 - 修改定位和樣式 */
+        /* 按鈕樣式 - 使用絕對定位，並確保在頁面可視範圍內 */
         .button-container {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 999999;
+            bottom: 5vh; /* 使用視口高度百分比 */
+            right: 5vw; /* 使用視口寬度百分比 */
+            z-index: 9999999; /* 非常高的z-index確保在頂層 */
             display: flex;
             flex-direction: row;
             gap: 10px;
-            pointer-events: auto; /* 確保按鈕可點擊 */
+            pointer-events: auto;
+            touch-action: auto;
+            -webkit-transform: translateZ(9999px);
+            transform: translateZ(9999px);
         }
         .ar-button {
             padding: 15px 25px;
@@ -48,19 +52,13 @@
             font-weight: bold;
             text-decoration: none;
             cursor: pointer;
-            pointer-events: auto; /* 確保按鈕可點擊 */
+            pointer-events: auto;
+            -webkit-user-select: none;
+            user-select: none;
+            touch-action: manipulation;
         }
-        .ar-button:hover {
+        .ar-button:hover, .ar-button:active {
             background-color: #FFD133;
-        }
-
-        /* 確保整個AR場景能夠接收點擊事件 */
-        .a-scene {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
         }
     </style>
 
@@ -91,6 +89,13 @@
 
             handleRotation: function (event) {
                 if (event.touches.length === 1) {
+                    // 檢查點擊是否在按鈕區域，如果是，則不處理旋轉
+                    const target = event.target;
+                    if (target.classList.contains('ar-button') || 
+                        target.closest('.button-container')) {
+                        return;
+                    }
+                    
                     if (event.type === 'touchstart') {
                         this.rotationStart = {
                             x: event.touches[0].pageX,
@@ -129,14 +134,27 @@
             }
         });
 
-        // 確保DOM加載完成後執行
-        document.addEventListener('DOMContentLoaded', function() {
-            // 檢查按鈕是否正確顯示
-            console.log('DOM loaded, buttons should be visible');
+        // 頁面載入完成後確保按鈕正確顯示
+        window.addEventListener('load', function() {
+            // 強制重新計算按鈕位置
+            const buttonContainer = document.querySelector('.button-container');
+            if (buttonContainer) {
+                // 通過重新附加來強制瀏覽器重新計算位置
+                buttonContainer.style.display = 'none';
+                setTimeout(function() {
+                    buttonContainer.style.display = 'flex';
+                }, 100);
+            }
         });
     </script>
 </head>
 <body>
+    <!-- 按鈕容器放在最上層，確保它總是可見 -->
+    <div class="button-container">
+        <a href="https://website.hle.com.tw/ema/webardemo/prism32/index.html" class="ar-button">頂點</a>
+        <a href="https://website.hle.com.tw/ema/webardemo/prism33/index.html" class="ar-button">邊</a>
+    </div>
+
     <a-scene mindar-image="imageTargetSrc: ./targets.mind; 
              autoStart: true;
              filterMinCF: 0.001;
@@ -162,11 +180,5 @@
                          gesture-handler></a-gltf-model>
         </a-entity>
     </a-scene>
-
-    <!-- 原生 HTML 按鈕 - 移到 a-scene 外部但在 body 內 -->
-    <div class="button-container">
-        <a href="https://website.hle.com.tw/ema/webardemo/prism32/index.html" class="ar-button">頂點</a>
-        <a href="https://website.hle.com.tw/ema/webardemo/prism33/index.html" class="ar-button">邊</a>
-    </div>
 </body>
 </html>

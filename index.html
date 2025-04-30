@@ -39,6 +39,7 @@
             font-weight: bold;
             padding: 10px 20px;
             margin: 5px;
+            cursor: pointer;
         }
     </style>
 
@@ -131,24 +132,30 @@
             justify-content="center"
             align-items="normal"
             component-padding="0.1"
-            opacity="0.7"
-            width="1.2"
-            height="0.2"
-            position="0 0 -0.5">
+            opacity="0.9"
+            width="2.0"
+            height="0.4"
+            position="0 -0.8 -1.0">
             
             <a-gui-button
                 class="gui-button"
-                width="0.5"
-                height="0.15"
-                onclick="window.location.href='https://website.hle.com.tw/ema/webardemo/prism32/index.html'">
+                width="0.8"
+                height="0.3"
+                margin="0.1"
+                onclick="window.location.href='https://website.hle.com.tw/ema/webardemo/prism32/index.html'"
+                hover="enabled: true"
+                active="enabled: true">
                 頂點
             </a-gui-button>
             
             <a-gui-button
                 class="gui-button"
-                width="0.5"
-                height="0.15"
-                onclick="window.location.href='https://website.hle.com.tw/ema/webardemo/prism33/index.html'">
+                width="0.8"
+                height="0.3"
+                margin="0.1"
+                onclick="window.location.href='https://website.hle.com.tw/ema/webardemo/prism33/index.html'"
+                hover="enabled: true"
+                active="enabled: true">
                 邊
             </a-gui-button>
         </a-gui-flex-container>
@@ -183,6 +190,21 @@
         // 當場景出錯時
         sceneEl.addEventListener('arError', function(ev) {
             console.log('AR 系統錯誤:', ev);
+        });
+
+        // 添加點擊事件處理
+        document.addEventListener('click', function(event) {
+            const buttons = document.querySelectorAll('a-gui-button');
+            buttons.forEach(button => {
+                const rect = button.getBoundingClientRect();
+                if (event.clientX >= rect.left && 
+                    event.clientX <= rect.right && 
+                    event.clientY >= rect.top && 
+                    event.clientY <= rect.bottom) {
+                    const href = button.getAttribute('onclick').match(/'(.*?)'/)[1];
+                    window.location.href = href;
+                }
+            });
         });
     </script>
 </body>

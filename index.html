@@ -31,17 +31,24 @@
             height: 100% !important;
             position: absolute !important;
         }
+        /* 創建一個完全獨立的按鈕層 */
+        .button-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 999999;
+            pointer-events: none;
+        }
         .button-container {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            z-index: 999999;
             display: flex;
             flex-direction: row;
             gap: 10px;
             pointer-events: auto;
-            opacity: 1 !important;
-            visibility: visible !important;
         }
         .ar-button {
             padding: 15px 25px;
@@ -54,21 +61,9 @@
             text-decoration: none;
             cursor: pointer;
             pointer-events: auto;
-            opacity: 1 !important;
-            visibility: visible !important;
         }
         .ar-button:hover {
             background-color: #FFD133;
-        }
-        /* 添加遮罩層確保按鈕可點擊 */
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 999998;
-            pointer-events: none;
         }
     </style>
 
@@ -168,13 +163,12 @@
         </a-entity>
     </a-scene>
 
-    <!-- 添加遮罩層 -->
-    <div class="overlay"></div>
-
-    <!-- 按鈕容器 -->
-    <div class="button-container" id="buttonContainer">
-        <a href="https://website.hle.com.tw/ema/webardemo/prism32/index.html" class="ar-button">頂點</a>
-        <a href="https://website.hle.com.tw/ema/webardemo/prism33/index.html" class="ar-button">邊</a>
+    <!-- 創建獨立的按鈕層 -->
+    <div class="button-layer">
+        <div class="button-container">
+            <a href="https://website.hle.com.tw/ema/webardemo/prism32/index.html" class="ar-button">頂點</a>
+            <a href="https://website.hle.com.tw/ema/webardemo/prism33/index.html" class="ar-button">邊</a>
+        </div>
     </div>
 
     <script>
@@ -185,63 +179,65 @@
 
         // 監聽相機權限狀態
         const sceneEl = document.querySelector('a-scene');
-        const buttonContainer = document.getElementById('buttonContainer');
+        const buttonLayer = document.querySelector('.button-layer');
+        const buttonContainer = document.querySelector('.button-container');
 
-        // 強制按鈕可見
-        function forceButtonsVisible() {
+        // 確保按鈕層始終可見
+        function ensureButtonsVisible() {
+            buttonLayer.style.display = 'block';
+            buttonLayer.style.opacity = '1';
+            buttonLayer.style.visibility = 'visible';
+            buttonLayer.style.pointerEvents = 'none';
+            
             buttonContainer.style.display = 'flex';
             buttonContainer.style.opacity = '1';
             buttonContainer.style.visibility = 'visible';
             buttonContainer.style.pointerEvents = 'auto';
-            
-            // 強制設置所有按鈕的樣式
-            const buttons = buttonContainer.getElementsByClassName('ar-button');
-            for (let button of buttons) {
-                button.style.display = 'block';
-                button.style.opacity = '1';
-                button.style.visibility = 'visible';
-                button.style.pointerEvents = 'auto';
-            }
         }
 
         // 當場景準備就緒時
         sceneEl.addEventListener('arReady', function() {
             console.log('AR 系統準備就緒');
-            forceButtonsVisible();
+            ensureButtonsVisible();
         });
 
         // 當場景出錯時
         sceneEl.addEventListener('arError', function(ev) {
             console.log('AR 系統錯誤:', ev);
-            forceButtonsVisible();
+            ensureButtonsVisible();
         });
 
         // 頁面加載完成後顯示按鈕
         window.addEventListener('load', function() {
-            forceButtonsVisible();
+            ensureButtonsVisible();
         });
 
         // 定期檢查按鈕是否可見
-        setInterval(forceButtonsVisible, 500);
+        setInterval(ensureButtonsVisible, 500);
 
         // 監聽場景渲染事件
         sceneEl.addEventListener('renderstart', function() {
-            forceButtonsVisible();
+            ensureButtonsVisible();
         });
 
         // 監聽場景渲染完成事件
         sceneEl.addEventListener('render', function() {
-            forceButtonsVisible();
+            ensureButtonsVisible();
         });
 
         // 監聽場景更新事件
         sceneEl.addEventListener('update', function() {
-            forceButtonsVisible();
+            ensureButtonsVisible();
         });
 
         // 監聽場景動畫幀事件
         sceneEl.addEventListener('animationframe', function() {
-            forceButtonsVisible();
+            ensureButtonsVisible();
+        });
+
+        // 監聽場景初始化完成事件
+        sceneEl.addEventListener('loaded', function() {
+            ensureButtonsVisible();
         });
     </script>
 </body>
